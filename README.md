@@ -40,7 +40,7 @@ All current changes, bug fixes and updates are done in the
 
 ## Screenshot
 
-![Open Monero](https://raw.githubusercontent.com/moneroexamples/openmonero/master/screenshot/screen1.png)
+![Open Monero](https://raw.githubusercontent.com/X-CASH-official/X-CASH-Web-Wallet/master/screenshot/screen1.png)
 
 
 ## Host it yourself
