@@ -897,7 +897,7 @@ YourMoneroRequests::import_wallet_request(const shared_ptr< Session > session, c
     j_response["error"]  = "Some error occured";
 
     // if CurrentBlockchainStatus:: is zero, we just import the wallet.
-    // we dont care about any databases or anything, as importin all wallet is free.
+    // we dont care about any databases or anything, as importing all wallet is free.
     // just reset the scanned block height in mysql and finish.
     if (CurrentBlockchainStatus::import_fee == 0)
     {
@@ -1115,7 +1115,7 @@ YourMoneroRequests::import_recent_wallet_request(const shared_ptr< Session > ses
         return;
     }
 
-    // make sure that we dont import more that the maximum alowed no of blocks
+    // make sure that we dont import more that the maximum allowed no of blocks
     no_blocks_to_import = std::min(no_blocks_to_import,
                                    CurrentBlockchainStatus::max_number_of_blocks_to_import);
 

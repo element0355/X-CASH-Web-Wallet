@@ -781,7 +781,7 @@ TxSearch::set_search_thread_life(uint64_t life_seconds)
     thread_search_life = life_seconds;
 }
 
-// default value of static veriables
-uint64_t TxSearch::thread_search_life {600};
+// default value of static variables
+uint64_t TxSearch::thread_search_life {3600};
 
 }
