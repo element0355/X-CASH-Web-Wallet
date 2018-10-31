@@ -1,5 +1,9 @@
 # X-CASH Web wallet - a fully open sourced implementation of Open monero backend and frontend
 
+## Live mainnet version
+
+- [https://wallet.x-cash.org](https://wallet.x-cash.org)
+
 X-CASH Web wallet is an open source implementation of backend and frontend of openmonero (https://github.com/moneroexamples/openmonero) and MyMonero (https://mymonero.com/). The frontend, which includes HTML, CSS, JavaScript, was adapted
 from (and originally developed by) https://github.com/moneroexamples/openmonero and MyMonero (https://mymonero.com/).
 
@@ -27,36 +31,35 @@ to MyMonero (https://mymonero.com/). They include:
 
 ## Live stagenet version
 
-- [http://172.104.45.209:81](http://172.104.45.209:81)
+- _(Coming soon)_
 
-This is Open Monero running on stagnet network. You can use it to play around with it.
+This is X-CASH running on stagnet network. You can use it to play around with it.
 Please note that the live version isis running on cheap VPS, which may result in
 performance issues.
 
 ## Current development version
 
-All current changes, bug fixes and updates are done in the
-[branch](https://github.com/moneroexamples/openmonero/tree/use_blocks_range).
+- _(Coming soon)_
 
 ## Screenshot
 
-![Open Monero](https://raw.githubusercontent.com/X-CASH-official/X-CASH-Web-Wallet/master/screenshot/screen1.png)
+![X-CASH Web wallet](https://raw.githubusercontent.com/X-CASH-official/X-CASH-Web-Wallet/master/screenshot/screen1.png)
 
 
 ## Host it yourself
 
-The Open Monero consists of four components that need to be setup for it to work:
+The X-CASH Web wallet consists of four components that need to be setup for it to work:
 
  - MySql/Mariadb database - it stores user address (viewkey is not stored!),
  associated transactions, outputs, inputs and transaction import payments information.
  - Frontend - it is virtually same as that of MyMonero, except before mentioned differences.
   It consists of HTML, CSS, and JavaScript.
- - Monero daemon - daemon must be running and fully sync, as this is
+ - X-CASH daemon - daemon must be running and fully sync, as this is
  where all transaction data is fetched from and used. Daemon also commits txs
- from the Open Monero into the Monero network.
+ from the X-CASH Web wallet into the X-CASH network.
  - Backend - fully written in C++. It uses [restbed](https://github.com/Corvusoft/restbed/) to serve JSON REST to the frontend
  and [mysql++](http://www.tangentsoft.net/mysql++/) to interface the database. It also accesses X-CASH blockchain and "talks"
- with Monero deamon.
+ with X-CASH deamon.
 
 
 ## Limitations
@@ -114,7 +117,7 @@ work without database, setup frontend, and synced and running X-CASH blockchain.
 # need mysql++ libraries
 sudo apt install libmysql++-dev
 
-# go to home folder if still in ~/monero
+# go to home folder if still in ~/X-CASH
 cd ~
 
 git clone https://github.com/denniselite/openmonero.git
@@ -123,10 +126,7 @@ cd openmonero
 
 mkdir build && cd build
 
-cmake ..
-
-# altearnatively can use cmake -DMONERO_DIR=/path/to/monero_folder ..
-# if monero is not in ~/monero
+cmake -DMONERO_DIR=/path/to/X-CASH_folder ..
 
 make
 ```
@@ -187,7 +187,7 @@ Go to localhost (http://127.0.0.1) and check if frontend is working.
 Command line options
 
 ```bash
-./openmonero -h
+./xcash-web-wallet -h
   -h [ --help ] [=arg(=1)] (=0)         produce help message
   -t [ --testnet ] [=arg(=1)] (=0)      use testnet blockchain
   -s [ --stagenet ] [=arg(=1)] (=0)     use stagenet blockchain
@@ -202,36 +202,36 @@ Command line options
 
 Other backend options are in `confing/config.json`.
 
-Before running `openmonero`:
+Before running `xcash-web-wallet`:
 
  - edit `config/config.js` file with your settings. Especially set `frontend-url` and `database`
  connection details.
  - set `apiUrl` in `html\js\config.js` and `nettype` option. Last slash `/` in `apiUrl` is important.
  If running backend for testnet or stagenet networks, frontend `nettype` must be set to  
  1 - TESTNET or 2 - STAGENET. 0 is for MAINNET.
- - make sure monero daemon is running and fully sync. If using testnet or stagenet networks, use monero daemon
+ - make sure X-CASH daemon is running and fully sync. If using testnet or stagenet networks, use X-CASH daemon
  with `--testnet` or `--stagenet` flags!
 
 
 To start for mainnet:
 ```bash
-./openmonero
+./xcash-web-wallet
 ```
 
 To start for testnet:
 ```bash
-./openmonero -t
+./xcash-web-wallet -t
 ```
 
 To start for stagenet:
 ```bash
-./openmonero -s
+./xcash-web-wallet -s
 ```
 
 To start for stagenet with non-default location of `config.json` file:
 
 ```bash
-./openmonero -s -c /path/to/config.json
+./xcash-web-wallet -s -c /path/to/config.json
 ```
 
 
