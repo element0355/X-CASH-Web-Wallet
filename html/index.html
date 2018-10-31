@@ -3,21 +3,48 @@
 
 <head lang="en">
     <meta charset="UTF-8">
+    <meta name="author" content="X-Cash">
+	<meta name="description" content="X-CASH Web Wallet">
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#060F1A">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#060F1A">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+   
+   <link rel="shortcut icon" href="https://x-cash.org/front/images/favicon.png">
+   <link rel="apple-touch-icon" sizes="180x180" href="https://x-cash.org/front/images/apple-icon-180.png">
+   
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117579435-3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
 
-    <title ng-bind="$root.title + ' - X-CASH'">X-CASH</title>
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
 
-    <link href="css/screen.css" media="screen, projection" rel="stylesheet" type="text/css"/>
-    <link href="bower_components/fontawesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
-    <link href="css/print.css" media="print" rel="stylesheet" type="text/css"/>
+        gtag('config', 'UA-117579435-3');
+    </script>
+    
+
+
+    <title ng-bind="$root.title + ' - X-CASH Web Wallet'">X-CASH</title>
+
+    <link href="css/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+    <link href="bower_components/fontawesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="css/print.css" media="print" rel="stylesheet" type="text/css" />
     <!--[if IE]>
     <link href="css/ie.css" media="screen, projection" rel="stylesheet" type="text/css"/>
     <![endif]-->
-    <link href="css_2/normalize.css" rel="stylesheet"/>
-    <link href="css_2/webflow.css" rel="stylesheet"/>
-    <link href="css_2/moncrypt.webflow.css" rel="stylesheet"/>
+    <link href="css_2/normalize.css" rel="stylesheet" />
+    <link href="css_2/webflow.css" rel="stylesheet" />
+    <link href="css_2/moncrypt.webflow.css" rel="stylesheet" />
 
     <style>
         .move-text-div {
@@ -29,7 +56,7 @@
     <!--<script src="bower_components/fastclick/lib/fastclick.js"></script>-->
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="bower_components/angular-route/angular-route.min.js"></script>
-   <!-- <script src="bower_components/ngInfiniteScroll/build/ng-infinite-scroll.min.js"></script>-->
+    <!-- <script src="bower_components/ngInfiniteScroll/build/ng-infinite-scroll.min.js"></script>-->
     <script src="bower_components/ng-idle/angular-idle.min.js"></script>
     <script src="bower_components/moment/min/moment-with-locales.min.js"></script>
     <script src="js/webflow.js"></script>
@@ -76,54 +103,53 @@
 
 <body ng-controller="AccountCtrl">
 
-<div ng-include src="getModalURL()"></div>
+    <div ng-include src="getModalURL()"></div>
 
-<div class="w-nav nav" data-collapse="small" data-animation="default" data-duration="400" data-contain="1">
-    <div class="w-container">
-        <nav class="w-nav-menu nav-menu" role="navigation">
-            <a class="w-nav-link nav-link" ng-show="!loggedIn()" ng-class="currentPage('create-your-account')" href="#!/create-your-account">CREATE A NEW ACCOUNT</a>
-            <a class="w-nav-link nav-link" ng-show="!loggedIn()" ng-class="currentPage('support')" href="#!/support">SUPPORT</a>
-            <a class="w-nav-link nav-link pointer login" ng-show="!loggedIn()" data-ix="display-login" show-modal="login">LOG IN</a>
+    <div class="w-nav nav" data-collapse="small" data-animation="default" data-duration="400" data-contain="1">
+        <div class="w-container">
+            <nav class="w-nav-menu nav-menu" role="navigation">
+                <a class="w-nav-link nav-link" ng-show="!loggedIn()" ng-class="currentPage('create-your-account')" href="#!/create-your-account">CREATE A NEW ACCOUNT</a>
+                <a class="w-nav-link nav-link" ng-show="!loggedIn()" ng-class="currentPage('support')" href="#!/support">SUPPORT</a>
+                <a class="w-nav-link nav-link pointer login" ng-show="!loggedIn()" data-ix="display-login" show-modal="login">LOG IN</a>
 
-            <div class="w-dropdown" ng-show="loggedIn()" data-delay="0">
-                <div class="w-dropdown-toggle dropdown-toggle">
-                    <div>Account</div>
-                    <div class="w-icon-dropdown-toggle arrow-icon-style"></div>
+                <div class="w-dropdown" ng-show="loggedIn()" data-delay="0">
+                    <div class="w-dropdown-toggle dropdown-toggle">
+                        <div>Account</div>
+                        <div class="w-icon-dropdown-toggle arrow-icon-style"></div>
+                    </div>
+                    <nav class="w-dropdown-list dropdown-rounded">
+                        <a class="w-dropdown-link dropdown-styling pointer top" data-ix="display-login-key-review" show-modal="review-login-key">Review Login Key</a>
+                        <!--<a class="w-dropdown-link dropdown-styling pointer" show-modal="import-wallet" ng-hide="account_scan_start_height == 0">Import Transactions</a>-->
+                        <a class="w-dropdown-link dropdown-styling pointer" show-modal="imported-account">Import Transactions</a>
+                        <a class="w-dropdown-link dropdown-styling pointer bottom" data-ix="display-review-account" show-modal="review-account-details">Account Details</a>
+                    </nav>
                 </div>
-                <nav class="w-dropdown-list dropdown-rounded">
-                    <a class="w-dropdown-link dropdown-styling pointer top" data-ix="display-login-key-review" show-modal="review-login-key">Review Login Key</a>
-                    <!--<a class="w-dropdown-link dropdown-styling pointer" show-modal="import-wallet" ng-hide="account_scan_start_height == 0">Import Transactions</a>-->
-                    <a class="w-dropdown-link dropdown-styling pointer" show-modal="imported-account">Import Transactions</a>
-                    <a class="w-dropdown-link dropdown-styling pointer bottom" data-ix="display-review-account" show-modal="review-account-details">Account Details</a>
-                </nav>
+                <a class="w-nav-link nav-link" ng-show="loggedIn()" ng-class="currentPage('support')" href="#!/support">Support</a>
+                <a class="w-nav-link nav-link" ng-show="loggedIn()" ng-class="currentPage('-')" ng-click="logout()" href="#!/">Logout</a>
+            </nav>
+            <div class="w-nav-button menu-btn">
+                <div class="w-icon-nav-menu"></div>
             </div>
-            <a class="w-nav-link nav-link" ng-show="loggedIn()" ng-class="currentPage('support')" href="#!/support">Support</a>
-            <a class="w-nav-link nav-link" ng-show="loggedIn()" ng-class="currentPage('-')" ng-click="logout()" href="#!/">Logout</a>
-        </nav>
-        <div class="w-nav-button menu-btn">
-            <div class="w-icon-nav-menu"></div>
-        </div>
-        <a class="w-nav-brand brand-box" ng-href="{{loggedIn() ? '#!/overview' : '#!/'}}">
+            <a class="w-nav-brand brand-box" ng-href="{{loggedIn() ? '#!/overview' : '#!/'}}">
             <img src="https://x-cash.org/front/images/logo-webwallet2.png" width="200" alt="xcash-webwallet">
         </a>
+        </div>
     </div>
-</div>
 
-<section class="main-section">
-    <div ng-view></div>
-</section>
-<div class="footer-section">	
-    <div class="lower-footer">	
-        <div class="w-container">	
-            <div class="w-row">	
-                <div class="w-clearfix footer-link">	
-                    Copyright © 2018, X-CASH. All trademarks and copyrights belong to their respective owners.<br>
-                    The wallet is based on <a class="footer-link"  style="margin-left: 0; float: none;" href="https://mymonero.com"> MyMonero</a> and <a href="https://github.com/moneroexamples/openmonero" target="_blank">OpenMonero</a> projects
+    <section class="main-section">
+        <div ng-view></div>
+    </section>
+    <div class="footer-section">
+        <div class="lower-footer">
+            <div class="w-container">
+                <div class="w-row">
+                    <div class="w-clearfix footer-link">
+                        Copyright © 2018, X-CASH. All trademarks and copyrights belong to their respective owners.<br> The wallet is based on <a class="footer-link" style="margin-left: 0; float: none;" href="https://mymonero.com"> MyMonero</a> and <a href="https://github.com/moneroexamples/openmonero" target="_blank">OpenMonero</a> projects
+                    </div>
                 </div>
-            </div>	
-        </div>	
+            </div>
+        </div>
     </div>
-</div>
 </body>
 
 </html>
