@@ -399,8 +399,8 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q, AccountS
             //
             function sendTo(target_address, amount, domain/*may be null*/)
             {
-                const mixin = 10; // mandatory fixed mixin for v8 Monero fork
-                let statusUpdate_messageBase = sweeping ? `Sending wallet balance…` : `Sending ${amount} XMR…`
+                const mixin = 20; // mandatory fixed mixin for v8 Monero fork
+                let statusUpdate_messageBase = sweeping ? `Sending wallet balance…` : `Sending ${amount} XCASH…`
                 function _configureWith_statusUpdate(str, code)
                 {
                     console.log("Step:", str)
