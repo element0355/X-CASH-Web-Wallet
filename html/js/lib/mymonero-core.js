@@ -4827,7 +4827,7 @@
       "use strict";
       const n = t(11).BigInteger;
       A.exports = {
-        coinUnitPlaces: 12,
+        coinUnitPlaces: 6,
         txMinConfirms: 10,
         coinSymbol: "XCASH",
         openAliasPrefix: "xca",
@@ -39762,7 +39762,8 @@
                 });
             }
             h(l.fetchingLatestBalance),
-              d.UnspentOuts(o, c.view, s.spend, c.spend, 10, Q, function(
+              // mixin is hardcoded here (no idea, why?)
+              d.UnspentOuts(o, c.view, s.spend, c.spend, 20, Q, function(
                 t,
                 a,
                 s
