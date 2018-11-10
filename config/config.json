@@ -55,7 +55,7 @@
   "refresh_block_status_every_seconds" : 10,
   "blocks_search_lookahead"            : 200,
   "search_thread_life_in_seconds"      : 120,
-  "max_number_of_blocks_to_import"     : 300000,
+  "max_number_of_blocks_to_import"     : 130000,
   "mysql_ping_every_seconds"           : 300,
   "ssl" :
   {

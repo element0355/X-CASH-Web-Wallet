@@ -534,7 +534,7 @@ CurrentBlockchainStatus::search_if_payment_made(
                                      bc_setup.import_payment_viewkey,
                                      derivation))
         {
-            OMERROR << "Cant get derived key for: "  << "\n"
+            OMERROR << "Cant get derived key for1: "  << "\n"
                     << "pub_tx_key: " << tx_pub_key << " and "
                     << "prv_view_key" << bc_setup.import_payment_viewkey;
 

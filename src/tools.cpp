@@ -996,7 +996,7 @@ is_output_ours(const size_t& output_index,
 
     if (!generate_key_derivation(pub_tx_key, private_view_key, derivation))
     {
-        cerr << "Cant get dervied key for: "  << "\n"
+        cerr << "Cant get dervied key for3: "  << "\n"
              << "pub_tx_key: " << pub_tx_key  << " and "
              << "prv_view_key" << private_view_key << endl;
 
