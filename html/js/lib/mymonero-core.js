@@ -16832,8 +16832,8 @@
               (S[iA >> 2] = rA),
               (AA = !0),
               D(rA < fA, "TOTAL_MEMORY not big enough for stack"),
-              (o.wasmTableSize = 1118),
-              (o.wasmMaxTableSize = 1118),
+              (o.wasmTableSize = 1110),
+              (o.wasmMaxTableSize = 1110),
               (o.asmGlobalArg = {}),
               (o.asmLibraryArg = {
                 enlargeMemory: hA,
