@@ -168,377 +168,385 @@ TxSearch::operator()()
 
                 // Class that is responsible for identification of our outputs
                 // and inputs in a given tx.
-                OutputInputIdentification oi_identification {
+                // If it throws an exception just ignore it and do the further processing
+                try
+                {
+                    OutputInputIdentification oi_identification {
                             &address, &viewkey, &tx, tx_hash,
                             is_coinbase, current_bc_status};
+                    
+                    // flag indicating whether the txs in the given block are spendable.
+                    // this is true when block number is more than 10 blocks from current
+                    // blockchain height.
+                    // if tx.unlock_time is not given (its value is 0), we set it
+                    // here. For coinbase its always given, so no need to check for that
 
-                // flag indicating whether the txs in the given block are spendable.
-                // this is true when block number is more than 10 blocks from current
-                // blockchain height.
-                // if tx.unlock_time is not given (its value is 0), we set it
-                // here. For coinbase its always given, so no need to check for that
+                    uint64_t tx_unlock_time = tx.unlock_time;
 
-                uint64_t tx_unlock_time = tx.unlock_time;
+                    if (tx_unlock_time == 0)
+                        tx_unlock_time = blk_height + CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE;
 
-                if (tx_unlock_time == 0)
-                    tx_unlock_time = blk_height + CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE;
+                    bool is_spendable = current_bc_status->is_tx_unlocked(
+                            tx_unlock_time, blk_height);
 
-                bool is_spendable = current_bc_status->is_tx_unlocked(
-                        tx_unlock_time, blk_height);
+                    // this is id of txs in lmdb blockchain table.
+                    // it will be used mostly to sort txs in the frontend.
+                    uint64_t blockchain_tx_id {0};
 
-                // this is id of txs in lmdb blockchain table.
-                // it will be used mostly to sort txs in the frontend.
-                uint64_t blockchain_tx_id {0};
+                    // FIRSt step.
+                    oi_identification.identify_outputs();
 
-                // FIRSt step.
-                oi_identification.identify_outputs();
+                    vector<uint64_t> amount_specific_indices;
 
-                vector<uint64_t> amount_specific_indices;
+                    uint64_t tx_mysql_id {0};
 
-                uint64_t tx_mysql_id {0};
+                    // create pointer to mysql transaction object
+                    // that we will initilize if we find something.
+                    unique_ptr<mysqlpp::Transaction> mysql_transaction;
 
-                // create pointer to mysql transaction object
-                // that we will initilize if we find something.
-                unique_ptr<mysqlpp::Transaction> mysql_transaction;
-
-                // if we identified some outputs as ours,
-                // save them into mysql.
-                if (!oi_identification.identified_outputs.empty())
-                {
-
-                    if (!blk_timestamp_mysql_format)
+                    // if we identified some outputs as ours,
+                    // save them into mysql.
+                    if (!oi_identification.identified_outputs.empty())
                     {
-                        blk_timestamp_mysql_format
-                                = unique_ptr<DateTime>(
-                                        new DateTime(
-                                        static_cast<time_t>(blk_timestamp)));
-                    }
 
-                    if (!mysql_transaction)
-                    {
-                        // start mysql transaction here
-                        mysql_transaction
-                                = unique_ptr<mysqlpp::Transaction>(
-                                           new mysqlpp::Transaction(
-                                                   xmr_accounts->get_connection()
-                                                           ->get_connection()));
-
-                        // when we rescan blockchain some txs can already
-                        // be present in the mysql. So remove them, and their
-                        // associated data in that case to repopulate fresh
-                        // tx data
-                        if (!delete_existing_tx_if_exists(
-                                    oi_identification.get_tx_hash_str()))
-                            throw TxSearchException("Cant delete tx "
-                                         + oi_identification.tx_hash_str);
-
-                    }
-
-
-                    if (!current_bc_status->tx_exist(tx_hash, blockchain_tx_id))
-                    {
-                        OMERROR << "Tx " << oi_identification.get_tx_hash_str()
-                                << " " << pod_to_hex(tx_hash)
-                                << " not found in blockchain !";
-                        throw TxSearchException("Cant get tx from blockchain: "
-                                                + pod_to_hex(tx_hash));
-                    }
-
-                    OMINFO << " - found some outputs in block " << blk_height
-                            << ", tx: " << oi_identification.get_tx_hash_str();
-
-
-                    XmrTransaction tx_data;
-
-                    tx_data.id               = mysqlpp::null;
-                    tx_data.hash             = oi_identification
-                                                  .get_tx_hash_str();
-                    tx_data.prefix_hash      = oi_identification
-                                                  .get_tx_prefix_hash_str();
-                    tx_data.tx_pub_key       = oi_identification
-                                                 .get_tx_pub_key_str();
-                    tx_data.account_id       = acc->id.data;
-                    tx_data.blockchain_tx_id = blockchain_tx_id;
-                    tx_data.total_received   = oi_identification.total_received;
-                    tx_data.total_sent       = 0; // at this stage we don't have
-                                                 //  anyinfo about spendings
-
-                                                 // this is current block
-                                                 // + unlock time
-                                                 // for regular tx, the unlock time is
-                                                 // default of 10 blocks.
-                                                 // for coinbase tx it is 60 blocks
-                    tx_data.unlock_time      = tx_unlock_time;
-
-                    tx_data.height           = blk_height;
-                    tx_data.coinbase         = oi_identification.tx_is_coinbase;
-                    tx_data.is_rct           = oi_identification.is_rct;
-                    tx_data.rct_type         = oi_identification.rct_type;
-                    tx_data.spendable        = is_spendable;
-                    tx_data.payment_id       = current_bc_status
-                                                ->get_payment_id_as_string(tx);
-                    tx_data.mixin            = oi_identification.get_mixin_no();
-                    tx_data.timestamp        = *blk_timestamp_mysql_format;
-
-
-                    // insert tx_data into mysql's Transactions table
-                    tx_mysql_id = xmr_accounts->insert(tx_data);
-
-                    // get amount specific (i.e., global) indices of outputs
-                    if (!current_bc_status->get_amount_specific_indices(
-                            tx_hash, amount_specific_indices))
-                    {
-                        OMERROR << "cant get_amount_specific_indices!";
-                        throw TxSearchException(
-                                    "cant get_amount_specific_indices!");
-                    }
-
-                    if (tx_mysql_id == 0)
-                    {                        
-                        OMERROR << "tx_mysql_id is zero!" << tx_data;
-                        throw TxSearchException("tx_mysql_id is zero!");                        
-                    }
-
-                    vector<XmrOutput> outputs_found;
-
-                    // now add the found outputs into Outputs tables
-                    for (auto& out_info: oi_identification.identified_outputs)
-                    {
-                        XmrOutput out_data;
-
-                        out_data.id           = mysqlpp::null;
-                        out_data.account_id   = acc->id.data;
-                        out_data.tx_id        = tx_mysql_id;
-                        out_data.out_pub_key  = pod_to_hex(out_info.pub_key);
-                        out_data.tx_pub_key   = oi_identification
-                                .get_tx_pub_key_str();
-                        out_data.amount       = out_info.amount;
-                        out_data.out_index    = out_info.idx_in_tx;
-                        out_data.rct_outpk    = out_info.rtc_outpk;
-                        out_data.rct_mask     = out_info.rtc_mask;
-                        out_data.rct_amount   = out_info.rtc_amount;
-                        out_data.global_index = amount_specific_indices
-                                .at(out_data.out_index);
-                        out_data.mixin        = tx_data.mixin;
-                        out_data.timestamp    = tx_data.timestamp;
-
-                        outputs_found.push_back(std::move(out_data));
-
+                        if (!blk_timestamp_mysql_format)
                         {
-                            // add the outputs found into known_outputs_keys map
-                            std::lock_guard<std::mutex> lck (
-                                        getting_known_outputs_keys);
-                            known_outputs_keys.insert(
-                                {out_info.pub_key, out_info.amount});
+                            blk_timestamp_mysql_format
+                                    = unique_ptr<DateTime>(
+                                            new DateTime(
+                                            static_cast<time_t>(blk_timestamp)));
                         }
 
-                    } //  for (auto& out_info: oi_identification.identified_outputs)
-
-
-                    // insert all outputs found into mysql's outputs table
-                    uint64_t no_rows_inserted
-                            = xmr_accounts->insert(outputs_found);
-
-                    if (no_rows_inserted == 0)
-                    {                        
-                        throw TxSearchException("no_rows_inserted is zero!");
-                    }
-
-                } // if (!found_mine_outputs.empty())
-
-                // SECOND component: Checking for our key images, i.e., inputs.
-
-                // no need mutex here, as this will be exectued only after
-                // the above. there is no threads here.
-                oi_identification.identify_inputs(known_outputs_keys);
-
-
-                if (!oi_identification.identified_inputs.empty())
-                {
-                    // some inputs were identified as ours in a given tx.
-                    // so now, go over those inputs, and check
-                    // get detail info for each found mixin output from database
-
-                    if (!blk_timestamp_mysql_format)
-                    {
-                        blk_timestamp_mysql_format
-                                = unique_ptr<DateTime>(
-                                new DateTime(
-                                        static_cast<time_t>(blk_timestamp)));
-                    }
-
-                    if (!mysql_transaction)
-                    {
-                        // start mysql transaction here if not already present
-                        mysql_transaction
-                                = unique_ptr<mysqlpp::Transaction>(
-                                new mysqlpp::Transaction(
-                                        xmr_accounts->get_connection()
-                                                ->get_connection()));
-
-                        // when we rescan blockchain some txs can already
-                        // be present in the mysql. So remove them, and their
-                        // associated data in that case to repopulate fresh tx data
-
-                        // this will only execture if no outputs were found
-                        // above. So there is no risk of deleting same tx twice
-                        if (!delete_existing_tx_if_exists(
-                                    oi_identification.get_tx_hash_str()))
+                        if (!mysql_transaction)
                         {
+                            // start mysql transaction here
+                            mysql_transaction
+                                    = unique_ptr<mysqlpp::Transaction>(
+                                            new mysqlpp::Transaction(
+                                                    xmr_accounts->get_connection()
+                                                            ->get_connection()));
+
+                            // when we rescan blockchain some txs can already
+                            // be present in the mysql. So remove them, and their
+                            // associated data in that case to repopulate fresh
+                            // tx data
+                            if (!delete_existing_tx_if_exists(
+                                        oi_identification.get_tx_hash_str()))
+                                throw TxSearchException("Cant delete tx "
+                                            + oi_identification.tx_hash_str);
+
+                        }
+
+
+                        if (!current_bc_status->tx_exist(tx_hash, blockchain_tx_id))
+                        {
+                            OMERROR << "Tx " << oi_identification.get_tx_hash_str()
+                                    << " " << pod_to_hex(tx_hash)
+                                    << " not found in blockchain !";
+                            throw TxSearchException("Cant get tx from blockchain: "
+                                                    + pod_to_hex(tx_hash));
+                        }
+
+                        OMINFO << " - found some outputs in block " << blk_height
+                                << ", tx: " << oi_identification.get_tx_hash_str();
+
+
+                        XmrTransaction tx_data;
+
+                        tx_data.id               = mysqlpp::null;
+                        tx_data.hash             = oi_identification
+                                                    .get_tx_hash_str();
+                        tx_data.prefix_hash      = oi_identification
+                                                    .get_tx_prefix_hash_str();
+                        tx_data.tx_pub_key       = oi_identification
+                                                    .get_tx_pub_key_str();
+                        tx_data.account_id       = acc->id.data;
+                        tx_data.blockchain_tx_id = blockchain_tx_id;
+                        tx_data.total_received   = oi_identification.total_received;
+                        tx_data.total_sent       = 0; // at this stage we don't have
+                                                    //  anyinfo about spendings
+
+                                                    // this is current block
+                                                    // + unlock time
+                                                    // for regular tx, the unlock time is
+                                                    // default of 10 blocks.
+                                                    // for coinbase tx it is 60 blocks
+                        tx_data.unlock_time      = tx_unlock_time;
+
+                        tx_data.height           = blk_height;
+                        tx_data.coinbase         = oi_identification.tx_is_coinbase;
+                        tx_data.is_rct           = oi_identification.is_rct;
+                        tx_data.rct_type         = oi_identification.rct_type;
+                        tx_data.spendable        = is_spendable;
+                        tx_data.payment_id       = current_bc_status
+                                                    ->get_payment_id_as_string(tx);
+                        tx_data.mixin            = oi_identification.get_mixin_no();
+                        tx_data.timestamp        = *blk_timestamp_mysql_format;
+
+
+                        // insert tx_data into mysql's Transactions table
+                        tx_mysql_id = xmr_accounts->insert(tx_data);
+
+                        // get amount specific (i.e., global) indices of outputs
+                        if (!current_bc_status->get_amount_specific_indices(
+                                tx_hash, amount_specific_indices))
+                        {
+                            OMERROR << "cant get_amount_specific_indices!";
                             throw TxSearchException(
-                                    "Cant delete tx "
-                                    + oi_identification.tx_hash_str);
+                                        "cant get_amount_specific_indices!");
                         }
-                    }
-
-                    if (blockchain_tx_id == 0)
-                    {
-                        if (!current_bc_status
-                                ->tx_exist(oi_identification.tx_hash,
-                                           blockchain_tx_id))
-                        {
-                            OMERROR << "Tx "
-                                    << oi_identification.get_tx_hash_str()
-                                     << "not found in blockchain !";
-                            throw TxSearchException(
-                                        "Cant get tx from blockchain: "
-                                        + pod_to_hex(tx_hash));
-                        }
-                    }
-
-                    OMINFO << "Found some possible inputs in block "
-                           << blk_height << ", tx: "
-                           << oi_identification.get_tx_hash_str();
-
-                    vector<XmrInput> inputs_found;
-
-                    for (auto& in_info: oi_identification.identified_inputs)
-                    {
-                        XmrOutput out;
-
-                        if (xmr_accounts->output_exists(
-                                    pod_to_hex(in_info.out_pub_key), out))
-                        {
-
-                            // seems that this key image is ours.
-                            // so get it information from database into XmrInput
-                            // database structure that will be written later
-                            // on into database.
-
-                            XmrInput in_data;
-
-                            in_data.id          = mysqlpp::null;
-                            in_data.account_id  = acc->id.data;
-                            in_data.tx_id       = 0; // later we set it
-                            in_data.output_id   = out.id.data;
-                            in_data.key_image   = in_info.key_img;
-                            in_data.amount      = out.amount;
-                                                    // must match corresponding
-                                                    // output's amount
-                            in_data.timestamp   = *blk_timestamp_mysql_format;
-
-                            inputs_found.push_back(in_data);
-
-                        } // if (xmr_accounts->output_exists(o
-
-                    } // for (auto& in_info: oi_identification.identified_inputs)
-
-
-                    if (!inputs_found.empty())
-                    {
-                        // seems we have some inputs found. time
-                        // to write it to mysql. But first,
-                        // check if this tx is written in mysql.
-
-                        // calculate how much we preasumply spent.
-                        uint64_t total_sent {0};
-
-                        for (const XmrInput& in_data: inputs_found)
-                            total_sent += in_data.amount;
 
                         if (tx_mysql_id == 0)
+                        {                        
+                            OMERROR << "tx_mysql_id is zero!" << tx_data;
+                            throw TxSearchException("tx_mysql_id is zero!");                        
+                        }
+
+                        vector<XmrOutput> outputs_found;
+
+                        // now add the found outputs into Outputs tables
+                        for (auto& out_info: oi_identification.identified_outputs)
                         {
-                            // this txs hasnt been seen in step first.
-                            // it means that it only contains potentially our
-                            // key images. It does not have our outputs.
-                            // so write it to mysql as ours, with
-                            // total received of 0.
+                            XmrOutput out_data;
 
-                            XmrTransaction tx_data;
-
-                            tx_data.id               = mysqlpp::null;
-                            tx_data.hash             = oi_identification
-                                    .get_tx_hash_str();
-                            tx_data.prefix_hash      = oi_identification
-                                    .get_tx_prefix_hash_str();
-                            tx_data.tx_pub_key       = oi_identification
+                            out_data.id           = mysqlpp::null;
+                            out_data.account_id   = acc->id.data;
+                            out_data.tx_id        = tx_mysql_id;
+                            out_data.out_pub_key  = pod_to_hex(out_info.pub_key);
+                            out_data.tx_pub_key   = oi_identification
                                     .get_tx_pub_key_str();
-                            tx_data.account_id       = acc->id.data;
-                            tx_data.blockchain_tx_id = blockchain_tx_id;
-                            tx_data.total_received   = 0; // because this is
-                                                          //spending,
-                                                          //total_recieved is 0
-                            tx_data.total_sent       = total_sent;
-                            tx_data.unlock_time      = tx_unlock_time;
-                            tx_data.height           = blk_height;
-                            tx_data.coinbase         = oi_identification
-                                    .tx_is_coinbase;
-                            tx_data.is_rct           = oi_identification
-                                    .is_rct;
-                            tx_data.rct_type         = oi_identification
-                                    .rct_type;
-                            tx_data.spendable        = is_spendable;
-                            tx_data.payment_id       = current_bc_status
-                                    ->get_payment_id_as_string(tx);
-                            tx_data.mixin            = oi_identification
-                                    .get_mixin_no();
-                            tx_data.timestamp    = *blk_timestamp_mysql_format;
+                            out_data.amount       = out_info.amount;
+                            out_data.out_index    = out_info.idx_in_tx;
+                            out_data.rct_outpk    = out_info.rtc_outpk;
+                            out_data.rct_mask     = out_info.rtc_mask;
+                            out_data.rct_amount   = out_info.rtc_amount;
+                            out_data.global_index = amount_specific_indices
+                                    .at(out_data.out_index);
+                            out_data.mixin        = tx_data.mixin;
+                            out_data.timestamp    = tx_data.timestamp;
 
-                            // insert tx_data into mysql's Transactions table
-                            tx_mysql_id = xmr_accounts->insert(tx_data);
+                            outputs_found.push_back(std::move(out_data));
+
+                            {
+                                // add the outputs found into known_outputs_keys map
+                                std::lock_guard<std::mutex> lck (
+                                            getting_known_outputs_keys);
+                                known_outputs_keys.insert(
+                                    {out_info.pub_key, out_info.amount});
+                            }
+
+                        } //  for (auto& out_info: oi_identification.identified_outputs)
+
+
+                        // insert all outputs found into mysql's outputs table
+                        uint64_t no_rows_inserted
+                                = xmr_accounts->insert(outputs_found);
+
+                        if (no_rows_inserted == 0)
+                        {                        
+                            throw TxSearchException("no_rows_inserted is zero!");
+                        }
+
+                    } // if (!found_mine_outputs.empty())
+
+                    // SECOND component: Checking for our key images, i.e., inputs.
+
+                    // no need mutex here, as this will be exectued only after
+                    // the above. there is no threads here.
+                    oi_identification.identify_inputs(known_outputs_keys);
+
+
+                    if (!oi_identification.identified_inputs.empty())
+                    {
+                        // some inputs were identified as ours in a given tx.
+                        // so now, go over those inputs, and check
+                        // get detail info for each found mixin output from database
+
+                        if (!blk_timestamp_mysql_format)
+                        {
+                            blk_timestamp_mysql_format
+                                    = unique_ptr<DateTime>(
+                                    new DateTime(
+                                            static_cast<time_t>(blk_timestamp)));
+                        }
+
+                        if (!mysql_transaction)
+                        {
+                            // start mysql transaction here if not already present
+                            mysql_transaction
+                                    = unique_ptr<mysqlpp::Transaction>(
+                                    new mysqlpp::Transaction(
+                                            xmr_accounts->get_connection()
+                                                    ->get_connection()));
+
+                            // when we rescan blockchain some txs can already
+                            // be present in the mysql. So remove them, and their
+                            // associated data in that case to repopulate fresh tx data
+
+                            // this will only execture if no outputs were found
+                            // above. So there is no risk of deleting same tx twice
+                            if (!delete_existing_tx_if_exists(
+                                        oi_identification.get_tx_hash_str()))
+                            {
+                                throw TxSearchException(
+                                        "Cant delete tx "
+                                        + oi_identification.tx_hash_str);
+                            }
+                        }
+
+                        if (blockchain_tx_id == 0)
+                        {
+                            if (!current_bc_status
+                                    ->tx_exist(oi_identification.tx_hash,
+                                            blockchain_tx_id))
+                            {
+                                OMERROR << "Tx "
+                                        << oi_identification.get_tx_hash_str()
+                                        << "not found in blockchain !";
+                                throw TxSearchException(
+                                            "Cant get tx from blockchain: "
+                                            + pod_to_hex(tx_hash));
+                            }
+                        }
+
+                        OMINFO << "Found some possible inputs in block "
+                            << blk_height << ", tx: "
+                            << oi_identification.get_tx_hash_str();
+
+                        vector<XmrInput> inputs_found;
+
+                        for (auto& in_info: oi_identification.identified_inputs)
+                        {
+                            XmrOutput out;
+
+                            if (xmr_accounts->output_exists(
+                                        pod_to_hex(in_info.out_pub_key), out))
+                            {
+
+                                // seems that this key image is ours.
+                                // so get it information from database into XmrInput
+                                // database structure that will be written later
+                                // on into database.
+
+                                XmrInput in_data;
+
+                                in_data.id          = mysqlpp::null;
+                                in_data.account_id  = acc->id.data;
+                                in_data.tx_id       = 0; // later we set it
+                                in_data.output_id   = out.id.data;
+                                in_data.key_image   = in_info.key_img;
+                                in_data.amount      = out.amount;
+                                                        // must match corresponding
+                                                        // output's amount
+                                in_data.timestamp   = *blk_timestamp_mysql_format;
+
+                                inputs_found.push_back(in_data);
+
+                            } // if (xmr_accounts->output_exists(o
+
+                        } // for (auto& in_info: oi_identification.identified_inputs)
+
+
+                        if (!inputs_found.empty())
+                        {
+                            // seems we have some inputs found. time
+                            // to write it to mysql. But first,
+                            // check if this tx is written in mysql.
+
+                            // calculate how much we preasumply spent.
+                            uint64_t total_sent {0};
+
+                            for (const XmrInput& in_data: inputs_found)
+                                total_sent += in_data.amount;
 
                             if (tx_mysql_id == 0)
                             {
-                                OMERROR << "tx_mysql_id is zero!" << tx_data;
+                                // this txs hasnt been seen in step first.
+                                // it means that it only contains potentially our
+                                // key images. It does not have our outputs.
+                                // so write it to mysql as ours, with
+                                // total received of 0.
 
-                                //cerr << "tx_mysql_id is zero!" << endl;
-                                throw TxSearchException("tx_mysql_id is zero!");
-                                // it did not insert this tx, because maybe
-                                // it already
-                                // exisits in the MySQL. So maybe can now
-                                // check if we have it and get tx_mysql_id this
-                                // way.                               
+                                XmrTransaction tx_data;
+
+                                tx_data.id               = mysqlpp::null;
+                                tx_data.hash             = oi_identification
+                                        .get_tx_hash_str();
+                                tx_data.prefix_hash      = oi_identification
+                                        .get_tx_prefix_hash_str();
+                                tx_data.tx_pub_key       = oi_identification
+                                        .get_tx_pub_key_str();
+                                tx_data.account_id       = acc->id.data;
+                                tx_data.blockchain_tx_id = blockchain_tx_id;
+                                tx_data.total_received   = 0; // because this is
+                                                            //spending,
+                                                            //total_recieved is 0
+                                tx_data.total_sent       = total_sent;
+                                tx_data.unlock_time      = tx_unlock_time;
+                                tx_data.height           = blk_height;
+                                tx_data.coinbase         = oi_identification
+                                        .tx_is_coinbase;
+                                tx_data.is_rct           = oi_identification
+                                        .is_rct;
+                                tx_data.rct_type         = oi_identification
+                                        .rct_type;
+                                tx_data.spendable        = is_spendable;
+                                tx_data.payment_id       = current_bc_status
+                                        ->get_payment_id_as_string(tx);
+                                tx_data.mixin            = oi_identification
+                                        .get_mixin_no();
+                                tx_data.timestamp    = *blk_timestamp_mysql_format;
+
+                                // insert tx_data into mysql's Transactions table
+                                tx_mysql_id = xmr_accounts->insert(tx_data);
+
+                                if (tx_mysql_id == 0)
+                                {
+                                    OMERROR << "tx_mysql_id is zero!" << tx_data;
+
+                                    //cerr << "tx_mysql_id is zero!" << endl;
+                                    throw TxSearchException("tx_mysql_id is zero!");
+                                    // it did not insert this tx, because maybe
+                                    // it already
+                                    // exisits in the MySQL. So maybe can now
+                                    // check if we have it and get tx_mysql_id this
+                                    // way.                               
+                                }
+
+                            } //   if (tx_mysql_id == 0)
+
+                            // save all input found into database at once
+                            // but first update tx_mysql_id for these inputs
+                            for (XmrInput& in_data: inputs_found)
+                                in_data.tx_id = tx_mysql_id; // set tx id now.
+                                                            //before we made it 0
+
+                            uint64_t no_rows_inserted
+                                    = xmr_accounts->insert(inputs_found);
+
+                            if (no_rows_inserted == 0)
+                            {
+                                throw TxSearchException(
+                                            "no_rows_inserted is zero!");
                             }
 
-                        } //   if (tx_mysql_id == 0)
+                        } //  if (!inputs_found.empty())
 
-                        // save all input found into database at once
-                        // but first update tx_mysql_id for these inputs
-                        for (XmrInput& in_data: inputs_found)
-                            in_data.tx_id = tx_mysql_id; // set tx id now.
-                                                        //before we made it 0
+                    } //  if (!oi_identification.identified_inputs.empty())
 
-                        uint64_t no_rows_inserted
-                                = xmr_accounts->insert(inputs_found);
+                    // if we get to this point, we assume that all tx related
+                    // tables are ready
+                    // to be written, i.e., Transactions,
+                    // Outputs and Inputs. If so, write
+                    // all this into database.
 
-                        if (no_rows_inserted == 0)
-                        {
-                            throw TxSearchException(
-                                        "no_rows_inserted is zero!");
-                        }
-
-                    } //  if (!inputs_found.empty())
-
-                } //  if (!oi_identification.identified_inputs.empty())
-
-                // if we get to this point, we assume that all tx related
-                // tables are ready
-                // to be written, i.e., Transactions,
-                // Outputs and Inputs. If so, write
-                // all this into database.
-
-                if (mysql_transaction)
-                    mysql_transaction->commit();
+                    if (mysql_transaction)
+                        mysql_transaction->commit();        
+                } 
+                catch (const OutputInputIdentificationException& e)
+                {
+                    // do nothing...
+                }
 
             } // for (auto const& tx_pair: txs_map)
 

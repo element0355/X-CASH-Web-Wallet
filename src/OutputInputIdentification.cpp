@@ -36,9 +36,9 @@ OutputInputIdentification::OutputInputIdentification(
 
     if (!generate_key_derivation(tx_pub_key, *viewkey, derivation))
     {
-        OMERROR << "Cant get derived key for2: "  << "\n"
+        OMERROR << "Cant get derived key for: "  << "\n"
              << "pub_tx_key: " << get_tx_pub_key_str() << " and "
-             << "prv_view_key: " << *viewkey;;
+             << "prv_view_key: " << *viewkey << ", skipping";;
 
         throw OutputInputIdentificationException(
                     "Cant get derived key for a tx");
