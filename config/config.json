@@ -9,7 +9,7 @@
   "blockchain-path" :
   {
     "_comment" : "if paths are empty, default Monero paths will be used",
-    "mainnet"  : "",
+    "mainnet"  : "/home/crypto-user/.X-CASH/lmdb",
     "testnet"  : "",
     "stagenet" : ""
   },
@@ -19,6 +19,15 @@
     "url"      : "127.0.0.1",
     "port"     : 3306,
     "dbname"   : "xcashdb",
+    "user"     : "root",
+    "password" : "root"
+  },
+  "database_test":
+  {
+    "_comment" : "how should the backend connect to the test mysql database",
+    "url"      : "127.0.0.1",
+    "port"     : 3306,
+    "dbname"   : "xcashdb_test",
     "user"     : "root",
     "password" : "root"
   },
@@ -34,8 +43,8 @@
     "mainnet" :
     {
       "_comment": "these are official monero project donation address and viewkey. change it to yours",
-      "address" : "",
-      "viewkey" : ""
+      "address" : "XCA1ustweXpj9HkV7KZisk8xfpdppLjAWTXk7qMPbkfd5NkBBbVCawcVb8sAQKuCqiVYgZcuUAFYgKrMrweyiApZ37q2RXpeiq",
+      "viewkey" : "ae6184287ca791609844f140b8502ccfa2223c04c8699cf31fcd0af1f1d0be08"
     },
     "stagenet" :
     {
@@ -44,8 +53,10 @@
     }
   },
   "refresh_block_status_every_seconds" : 10,
-  "search_thread_life_in_seconds"      : 300,
-  "max_number_of_blocks_to_import"     : 132000,
+  "blocks_search_lookahead"            : 200,
+  "search_thread_life_in_seconds"      : 120,
+  "max_number_of_blocks_to_import"     : 130000,
+  "mysql_ping_every_seconds"           : 300,
   "ssl" :
   {
     "enable" : false,
