@@ -20,10 +20,10 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `xcashdb`
+-- Database: `webwalletdb`
 --
-CREATE DATABASE IF NOT EXISTS `xcashdb` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
-USE `xcashdb`;
+CREATE DATABASE IF NOT EXISTS `webwalletdb` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `webwalletdb`;
 
 -- --------------------------------------------------------
 
@@ -35,7 +35,7 @@ DROP TABLE IF EXISTS `Accounts`;
 CREATE TABLE `Accounts` (
   `id` bigint(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `address` varchar(127) NOT NULL,
-  `viewkey_hash` char(64) NOT NULL,
+  `viewkey_hash` char(255) NOT NULL,
   `scanned_block_height` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `scanned_block_timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `start_height` int(10) UNSIGNED NOT NULL DEFAULT '0',
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `Inputs` (
   `account_id` bigint(20) UNSIGNED NOT NULL,
   `tx_id` bigint(20) UNSIGNED NOT NULL,
   `output_id` bigint(20) UNSIGNED NOT NULL,
-  `key_image` varchar(64) NOT NULL DEFAULT '',
+  `key_image` varchar(255) NOT NULL DEFAULT '',
   `amount` bigint(20) UNSIGNED ZEROFILL NOT NULL DEFAULT '00000000000000000000',
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -78,11 +78,11 @@ CREATE TABLE IF NOT EXISTS `Outputs` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `account_id` bigint(20) UNSIGNED NOT NULL,
   `tx_id` bigint(20) UNSIGNED NOT NULL,
-  `out_pub_key` varchar(64) NOT NULL,
-  `rct_outpk` varchar(64) NOT NULL DEFAULT '',
-  `rct_mask` varchar(64) NOT NULL DEFAULT '',
-  `rct_amount` varchar(64) NOT NULL DEFAULT '',
-  `tx_pub_key` varchar(64) NOT NULL DEFAULT '',
+  `out_pub_key` varchar(255) NOT NULL,
+  `rct_outpk` varchar(255) NOT NULL DEFAULT '',
+  `rct_mask` varchar(255) NOT NULL DEFAULT '',
+  `rct_amount` varchar(255) NOT NULL DEFAULT '',
+  `tx_pub_key` varchar(255) NOT NULL DEFAULT '',
   `amount` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
   `global_index` bigint(20) UNSIGNED NOT NULL,
   `out_index` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
@@ -104,16 +104,14 @@ DROP TABLE IF EXISTS `Payments`;
 CREATE TABLE `Payments` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `address` varchar(127) NOT NULL,
-  `payment_id` varchar(64) NOT NULL,
-  `tx_hash` varchar(64) NOT NULL DEFAULT '',
+  `payment_id` varchar(255) NOT NULL,
+  `tx_hash` varchar(255) NOT NULL DEFAULT '',
   `request_fulfilled` tinyint(1) NOT NULL DEFAULT '0',
   `payment_address` varchar(127) NOT NULL,
   `import_fee` bigint(20) NOT NULL,
-  `payment_address` varchar(95) NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `account_id` (`account_id`) USING BTREE,
   UNIQUE KEY `payment_id` (`payment_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -126,9 +124,9 @@ CREATE TABLE `Payments` (
 DROP TABLE IF EXISTS `Transactions`;
 CREATE TABLE IF NOT EXISTS `Transactions` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `hash` varchar(64) NOT NULL,
-  `prefix_hash` varchar(64) NOT NULL DEFAULT '',
-  `tx_pub_key` varchar(64) NOT NULL DEFAULT '',
+  `hash` varchar(255) NOT NULL,
+  `prefix_hash` varchar(255) NOT NULL DEFAULT '',
+  `tx_pub_key` varchar(255) NOT NULL DEFAULT '',
   `account_id` bigint(20) UNSIGNED NOT NULL,
   `blockchain_tx_id` bigint(20) UNSIGNED NOT NULL,
   `total_received` bigint(20) UNSIGNED NOT NULL,
@@ -139,7 +137,7 @@ CREATE TABLE IF NOT EXISTS `Transactions` (
   `coinbase` tinyint(1) NOT NULL DEFAULT '0',
   `is_rct` tinyint(1) NOT NULL DEFAULT '1',
   `rct_type` int(4) NOT NULL DEFAULT '-1',
-  `payment_id` varchar(64) NOT NULL DEFAULT '',
+  `payment_id` varchar(255) NOT NULL DEFAULT '',
   `mixin` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -165,12 +163,6 @@ ALTER TABLE `Inputs`
 ALTER TABLE `Outputs`
   ADD CONSTRAINT `account_id3_FK` FOREIGN KEY (`account_id`) REFERENCES `Accounts` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `transaction_id_FK` FOREIGN KEY (`tx_id`) REFERENCES `Transactions` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `Payments`
---
-ALTER TABLE `Payments`
-  ADD CONSTRAINT `account_id` FOREIGN KEY (`account_id`) REFERENCES `Accounts` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `Transactions`
