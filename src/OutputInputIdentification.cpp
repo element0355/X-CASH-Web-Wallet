@@ -26,7 +26,7 @@ OutputInputIdentification::OutputInputIdentification(
     tx_is_coinbase = is_coinbase;
     tx_hash = _tx_hash;
 
-    is_rct = (tx->version == 2);
+    is_rct = (tx->version >= 2);
 
     if (is_rct)
     {
@@ -88,7 +88,7 @@ OutputInputIdentification::identify_outputs()
 
         // if mine output has RingCT, i.e., tx version is 2
         // need to decode its amount. otherwise its zero.
-        if (mine_output && tx->version == 2)
+        if (mine_output && tx->version >= 2)
         {
             // initialize with regular amount value
             // for ringct, except coinbase, it will be 0
@@ -137,7 +137,7 @@ OutputInputIdentification::identify_outputs()
 
             } // if (!tx_is_coinbase)
 
-        } // if (mine_output && tx.version == 2)
+        } // if (mine_output && tx.version >= 2)
 
         if (mine_output)
         {
