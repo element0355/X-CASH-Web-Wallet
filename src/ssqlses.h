@@ -44,18 +44,18 @@ sql_create_8(Accounts, 1, 6,
 struct XmrAccount : public Accounts, Table
 {
     static constexpr const char* SELECT_STMT = R"(
-        SELECT * FROM `Accounts` WHERE `id` = (%0q)
+        SELECT * FROM `Accounts` WHERE `id` = (%0q);
     )";
 
 
     static constexpr const char* SELECT_STMT2 = R"(
-        SELECT * FROM `Accounts` WHERE `address` = (%0q)
+        SELECT * FROM `Accounts` WHERE `address` = (%0q);
     )";
 
     // SELECT_STMT3 same as SELECT_STMT which is fine
     // easier to work with templates later
     static constexpr const char* SELECT_STMT3 = R"(
-        SELECT * FROM `Accounts` WHERE `id` = (%0q)
+        SELECT * FROM `Accounts` WHERE `id` = (%0q);
     )";
 
     static constexpr const char* INSERT_STMT = R"(
@@ -102,20 +102,20 @@ struct XmrTransaction : public Transactions, Table
 {
 
     static constexpr const char* SELECT_STMT = R"(
-        SELECT * FROM `Transactions` WHERE `account_id` = (%0q)
+        SELECT * FROM `Transactions` WHERE `account_id` = (%0q);
     )";
 
     static constexpr const char* SELECT_STMT2 = R"(
-        SELECT * FROM `Transactions` WHERE `id` = (%0q)
+        SELECT * FROM `Transactions` WHERE `id` = (%0q);
     )";
 
     // same as SELECT_STMT2 for similicity later on
     static constexpr const char* SELECT_STMT3 = R"(
-        SELECT * FROM `Transactions` WHERE `id` = (%0q)
+        SELECT * FROM `Transactions` WHERE `id` = (%0q);
     )";
 
     static constexpr const char* EXIST_STMT = R"(
-        SELECT * FROM `Transactions` WHERE `account_id` = (%0q) AND `hash` = (%1q)
+        SELECT * FROM `Transactions` WHERE `account_id` = (%0q) AND `hash` = (%1q);
     )";
 
     static constexpr const char* DELETE_STMT = R"(
@@ -188,19 +188,19 @@ struct XmrOutput : public Outputs, Table
 {
 
     static constexpr const char* SELECT_STMT = R"(
-      SELECT * FROM `Outputs` WHERE `account_id` = (%0q)
+      SELECT * FROM `Outputs` WHERE `account_id` = (%0q);
     )";
 
     static constexpr const char* SELECT_STMT2 = R"(
-      SELECT * FROM `Outputs` WHERE `tx_id` = (%0q)
+      SELECT * FROM `Outputs` WHERE `tx_id` = (%0q);
     )";
 
     static constexpr const char* SELECT_STMT3 = R"(
-      SELECT * FROM `Outputs` WHERE `id` = (%0q)
+      SELECT * FROM `Outputs` WHERE `id` = (%0q);
     )";
 
     static constexpr const char* EXIST_STMT = R"(
-      SELECT * FROM `Outputs` WHERE `out_pub_key` = (%0q)
+      SELECT * FROM `Outputs` WHERE `out_pub_key` = (%0q);
     )";
 
     static constexpr const char* INSERT_STMT = R"(
@@ -248,19 +248,19 @@ struct XmrInput : public Inputs, Table
 {
 
     static constexpr const char* SELECT_STMT = R"(
-     SELECT * FROM `Inputs` WHERE `account_id` = (%0q)
+     SELECT * FROM `Inputs` WHERE `account_id` = (%0q);
     )";
 
     static constexpr const char* SELECT_STMT2 = R"(
-     SELECT * FROM `Inputs` WHERE `tx_id` = (%0q)
+     SELECT * FROM `Inputs` WHERE `tx_id` = (%0q);
     )";
 
     static constexpr const char* SELECT_STMT3 = R"(
-      SELECT * FROM `Inputs` WHERE `id` = (%0q)
+      SELECT * FROM `Inputs` WHERE `id` = (%0q);
     )";
 
     static constexpr const char* SELECT_STMT4 = R"(
-     SELECT * FROM `Inputs` WHERE `output_id` = (%0q)
+     SELECT * FROM `Inputs` WHERE `output_id` = (%0q);
     )";
 
     static constexpr const char* INSERT_STMT = R"(
@@ -294,15 +294,15 @@ struct XmrPayment : public Payments, Table
 {
 
     static constexpr const char* SELECT_STMT = R"(
-      SELECT * FROM `Payments` WHERE `account_id` = (%0q)
+      SELECT * FROM `Payments` WHERE `account_id` = (%0q);
     )";
 
     static constexpr const char* SELECT_STMT2 = R"(
-       SELECT * FROM `Payments` WHERE `payment_id` = (%0q)
+       SELECT * FROM `Payments` WHERE `payment_id` = (%0q);
     )";
 
     static constexpr const char* SELECT_STMT3 = R"(
-      SELECT * FROM `Payments` WHERE `id` = (%0q)
+      SELECT * FROM `Payments` WHERE `id` = (%0q);
     )";
 
     static constexpr const char* INSERT_STMT = R"(

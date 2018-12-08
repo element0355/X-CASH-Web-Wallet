@@ -607,7 +607,7 @@ CurrentBlockchainStatus::search_if_payment_made(
 
             // if mine output has RingCT, i.e., tx version is 2
             // need to decode its amount. otherwise its zero.
-            if (mine_output && tx.version == 2)
+            if (mine_output && tx.version >= 2)
             {
                 // initialize with regular amount
                 uint64_t rct_amount = amount;
@@ -635,7 +635,7 @@ CurrentBlockchainStatus::search_if_payment_made(
                     amount = rct_amount;
                 }
 
-            } // if (mine_output && tx.version == 2)
+            } // if (mine_output && tx.version >= 2)
 
 
             if (mine_output)
