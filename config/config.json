@@ -2,25 +2,25 @@
   "daemon-url" :
   {
     "_comment" : "RPC urls to monero deamon",
-    "mainnet"  : "http://127.0.0.1:18081",
+    "mainnet"  : "http://127.0.0.1:18281",
     "testnet"  : "http://127.0.0.1:28081",
     "stagenet" : "http://127.0.0.1:38081"
   },
   "blockchain-path" :
   {
     "_comment" : "if paths are empty, default Monero paths will be used",
-    "mainnet"  : "/home/crypto-user/.X-CASH/lmdb",
+    "mainnet"  : "/home/ubuntu/.X-CASH/lmdb",
     "testnet"  : "",
     "stagenet" : ""
   },
   "database" :
   {
     "_comment" : "how should the backend connect to the mysql database",
-    "url"      : "127.0.0.1",
+    "url"      : "web-wallet57...",
     "port"     : 3306,
-    "dbname"   : "xcashdb",
-    "user"     : "root",
-    "password" : "root"
+    "dbname"   : "name",
+    "user"     : "user",
+    "password" : "password"
   },
   "database_test":
   {
@@ -55,8 +55,10 @@
   "refresh_block_status_every_seconds" : 10,
   "blocks_search_lookahead"            : 200,
   "search_thread_life_in_seconds"      : 120,
-  "max_number_of_blocks_to_import"     : 130000,
-  "mysql_ping_every_seconds"           : 300,
+  "max_number_of_blocks_to_import"     : 132000,
+  "mysql_ping_every_seconds"           : 200,
+  "_comment": "if the threadpool_size (no of threads) below is 0, its size is automaticly set based on your cpu. If its not 0, the value specified is used instead",
+  "blockchain_treadpool_size"          : 0,
   "ssl" :
   {
     "enable" : false,
