@@ -733,20 +733,20 @@ CurrentBlockchainStatus::search_if_payment_made(
 
                 OMINFO << "Import payment done";
 
-<<<<<<< HEAD
-        //          <public_key  , amount  , out idx>
-        vector<tuple<txout_to_key, uint64_t, uint64_t>> outputs;
-
-        outputs = get_ouputs_tuple(tx);
-
-        string tx_hash_str = pod_to_hex(get_transaction_hash(tx));
+                return true;
+            }
+        }
+    }
 
 
-        uint64_t total_received {0};
+    return false;
+}
 
-        for (auto& out: outputs)
+
+string
 CurrentBlockchainStatus::get_payment_id_as_string(const transaction& tx)
 {
+    crypto::hash payment_id = null_hash;
     crypto::hash8 payment_id8 = null_hash8;
 
     get_payment_id(tx, payment_id, payment_id8);
@@ -1322,4 +1322,3 @@ MicroCoreAdapter::get_tx(crypto::hash const& tx_hash, transaction& tx)
 
 
 }
-
