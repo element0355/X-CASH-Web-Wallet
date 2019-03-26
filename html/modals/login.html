@@ -19,7 +19,7 @@
                 <div class="w-tabs" data-duration-in="300" data-duration-out="100">
                     <div class="w-tab-menu tabs-style">
                         <a class="w-tab-link w-inline-block tab-link-1" ng-class="{'w--current': tab_number == 1}" data-w-tab="Tab 1" ng-click="set_tab(1)">
-                            <div>Login with Private Login Key</div>
+                            <div>Login with mnemonic seed</div>
                         </a>
                         <a class="w-tab-link w-inline-block tab-link-2" ng-class="{'w--current': tab_number == 2}" data-w-tab="Tab 2" ng-click="set_tab(2)">
                             <div>Login with Address and Viewkey</div>
@@ -30,7 +30,7 @@
                             <div class="form-wrapper">
                                 <form id="email-form" name="email-form" data-name="Email Form" data-redirect="/overview.html"
                                       ng-submit="login_mnemonic(mnemonic, mnemonic_language)" >
-                                    <label class="field-label" for="Login-Key">Your Private Login Key</label>
+                                    <label class="field-label" for="Login-Key">Your mnemonic seed</label>
                                     <input class="w-input" id="Login-Key" type="text" placeholder="Enter your Private Login Key here"
                                            name="Login-Key" data-name="Login Key" autocomplete="off" required="required" ng-model="mnemonic">
                                     <label class="field-label" for="Login-Key-Language">Language</label>
@@ -57,7 +57,7 @@
                             <div class="form-wrapper">
                                 <form id="email-form" name="email-form" data-name="Email Form" data-redirect="/overview.html"
                                       ng-submit="login_keys(address, view_key, spend_key)" >
-                                    <label class="field-label" for="your-address">Your Address</label>
+                                    <label class="field-label" for="your-address">Your XCASH Address</label>
                                     <input class="w-input" id="your-address" type="text" placeholder="Enter your address here"
                                            name="Your-address" data-name="Your address" autocomplete="off" required="required" ng-model="address">
                                     <label class="field-label" for="view-key">View Key</label>
