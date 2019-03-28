@@ -1594,9 +1594,7 @@ textarea.w-select {
   text-align: left;
   cursor: pointer;
 }
-.w-tab-link.w--current {
-  background-color: #BCD3F3;
-}
+
 .w-tab-content {
   position: relative;
   display: block;
