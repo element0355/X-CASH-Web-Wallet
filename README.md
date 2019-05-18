@@ -106,7 +106,7 @@ cd X-CASH/
 # to speed up the compilation you can use 
 # $ make -j $(nproc)
 # where $(nproc) is a count of your available CPU's
-make
+USE_SINGLE_BUILDDIR=1 make release
 ```
 
 ### #2 Compilation of the X-CASH web wallet: Backend
