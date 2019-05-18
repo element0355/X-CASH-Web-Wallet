@@ -73,16 +73,22 @@ X-CASH is not as fast as MyMonero.
   after logout. Once the search threads stop, they can't be restarted without user logging
    in back, because viewkey is unknown.
 
-
-## Example compilation on Ubuntu 18.04
+## How to build
 
 Below are example and basic instructions on how to setup up and run X-CASH web wallet on Ubuntu 16.04.
 For other Linux operating systems, the instructions are analogical.
 
+### To build WebWallet yourself, you need to go through:
 
-#### X-CASH download and compilation
+1. Install X-CASH core;
+2. Install X-CASH WebWallet backend;
+3. Configure Database;
+4. Configure NGINX and Frontend (optional);
+5. Launch X-CASH Web wallet backend
 
-Download and compile recent X-CASH into your home folder:
+### #1 Install X-CASH core
+
+The first step of Web Wallet setup is to download and compile recent X-CASH core. It does not matter which directory you're going to use, in the instructions below we'll use home folder:
 
 ```bash
 # first install X-CASH and Monero dependencies
@@ -90,7 +96,7 @@ sudo apt update
 
 sudo apt install git build-essential cmake libboost-all-dev miniupnpc libunbound-dev graphviz doxygen libunwind8-dev pkg-config libssl-dev libcurl4-openssl-dev libgtest-dev libreadline-dev libzmq3-dev libsodium-dev libhidapi-dev libhidapi-libusb0
 
-# go to home folder
+# go to home folder and install X-CASH core
 cd ~
 
 git clone https://github.com/X-CASH-official/X-CASH.git
@@ -103,7 +109,7 @@ cd X-CASH/
 make
 ```
 
-#### Compilation of the X-CASH web wallet (don't run it yet)
+### #2 Compilation of the X-CASH web wallet: Backend
 
 Once X-CASH was downloaded and compiled, we can download X-CASH web wallet and compile it.
 In fact we could postpone compilation to later, but
@@ -118,12 +124,14 @@ sudo apt install libmysql++-dev
 # go to home folder if still in ~/X-CASH
 cd ~
 
-git clone https://github.com/denniselite/openmonero.git
+git clone --recursive https://github.com/X-CASH-official/X-CASH-Web-Wallet.git
 
-cd openmonero
+cd X-CASH-Web-Wallet
 
 mkdir build && cd build
 
+# in your case it could be
+# cmake -DMONERO_DIR=/home/ubuntu/X-CASH ..
 cmake -DMONERO_DIR=/path/to/X-CASH_folder ..
 
 make
