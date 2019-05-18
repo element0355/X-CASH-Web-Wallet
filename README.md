@@ -111,8 +111,8 @@ we can just do it now, to see if it compiles. But don't run it yet. It will not
 work without database, setup frontend, and synced and running X-CASH blockchain.
 
 ```bash
-# need mysql++ library gcovr (for code coverage)
-sudo apt install libmysql++-dev gcovr
+# need mysql++ library
+sudo apt install libmysql++-dev
 
 
 # go to home folder if still in ~/X-CASH
@@ -191,13 +191,17 @@ Command line options
   -h [ --help ] [=arg(=1)] (=0)         produce help message
   -t [ --testnet ] [=arg(=1)] (=0)      use testnet blockchain
   -s [ --stagenet ] [=arg(=1)] (=0)     use stagenet blockchain
-  --do-not-relay [=arg(=1)] (=0)        does not relay txs to other nodes.
-                                        useful when testing construction and
+  --do-not-relay [=arg(=1)] (=0)        does not relay txs to other nodes. 
+                                        useful when testing construction and 
                                         submiting txs
   -p [ --port ] arg (=1984)             default port for restbed service of
                                         X-CASH Web wallet backend
   -c [ --config-file ] arg (=./config/config.json)
                                         Config file path.
+  -m [ --monero-log-level ] arg (=1)    Monero log level 1-4, default is 1.
+  -l [ --log-file ] arg (=./openmonero.log)
+                                        Name and path to log file. -l "" to 
+                                        disable log file.
 ```
 
 Other backend options are in `confing/config.json`.
