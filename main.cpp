@@ -8,7 +8,7 @@
 #include <iostream>
 #include <memory>
 #include <cstdlib>
-
+#include <thread>
 
 using namespace std;
 using namespace restbed;
@@ -284,6 +284,7 @@ if (config_json["ssl"]["enable"])
     Uri ssl_crt = Uri(config_json["ssl"]["ssl-crt"].get<string>());
     Uri dh_pem  = Uri(config_json["ssl"]["dh-pem"].get<string>());
 
+    settings->set_worker_limit( std::thread::hardware_concurrency( ) );
     ssl_settings->set_http_disabled(true);
     ssl_settings->set_port(app_port);
     ssl_settings->set_private_key(ssl_key);
@@ -298,6 +299,7 @@ if (config_json["ssl"]["enable"])
 }
 else
 {
+    settings->set_worker_limit( std::thread::hardware_concurrency( ) );
     settings->set_port(app_port);
     settings->set_default_header("Connection", "close");
 
