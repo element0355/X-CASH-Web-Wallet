@@ -61,8 +61,6 @@ if (NOT MYSQL_INCLUDE_DIR)
 endif()
 
 
-
-
 include_directories(${MYSQL_INCLUDE_DIR})
 
 # include boost headers
@@ -131,7 +129,7 @@ target_include_monero_directories(${PROJECT_NAME})
 set(LIBRARIES
         myxrm
         myxrmcore
-        ${Monero_LIBRARIES}
+        Monero::Monero
         restbed
         mysqlpp
         mysqlclient
