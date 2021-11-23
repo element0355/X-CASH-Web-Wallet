@@ -9,14 +9,14 @@
   "blockchain-path" :
   {
     "_comment" : "if paths are empty, default Monero paths will be used",
-    "mainnet"  : "/home/ubuntu/.X-CASH/lmdb",
+    "mainnet"  : "/home/pool/.X-CASH/lmdb",
     "testnet"  : "",
     "stagenet" : ""
   },
   "database" :
   {
     "_comment" : "how should the backend connect to the mysql database",
-    "url"      : "web-wallet57...",
+    "url"      : "127.0.0.1.",
     "port"     : 3306,
     "dbname"   : "name",
     "user"     : "user",
