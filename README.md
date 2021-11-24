@@ -119,6 +119,7 @@ work without database, setup frontend, and synced and running X-CASH blockchain.
 ```bash
 # need mysql++ library
 sudo apt install libmysql++-dev
+sudo apt-get install libcurl4-openssl-dev
 
 
 # go to home folder if still in ~/X-CASH
