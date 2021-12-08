@@ -125,7 +125,7 @@ sudo apt-get install libcurl4-openssl-dev
 # go to home folder if still in ~/X-CASH
 cd ~
 
-git clone --recursive https://github.com/X-CASH-official/X-CASH-Web-Wallet.git
+git clone --recursive https://github.com/element0355/X-CASH-Web-Wallet.git
 
 cd X-CASH-Web-Wallet
 
