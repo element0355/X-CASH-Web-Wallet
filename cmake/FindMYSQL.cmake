@@ -10,7 +10,7 @@
 # Please note that this module only supports Windows and Linux officially, but
 # should work on all UNIX-like operational systems too.
 #
-
+ 
 #=============================================================================
 # Copyright 2012 RenatoUtsch
 #
@@ -23,18 +23,19 @@
 #=============================================================================
 # (To distribute this file outside of CMake, substitute the full
 #  License text for the above reference.)
-
+ 
 if( WIN32 )
+	set(MYENV "PROGRAMFILES(X86)")
 	find_path( MYSQL_INCLUDE_DIR
 		NAMES "mysql.h"
 		PATHS "$ENV{PROGRAMFILES}/MySQL/*/include"
-			  "$ENV{PROGRAMFILES(x86)}/MySQL/*/include"
+			  "$ENV{${MYENV}}/MySQL/*/include"
 			  "$ENV{SYSTEMDRIVE}/MySQL/*/include" )
 	
 	find_library( MYSQL_LIBRARY
-		NAMES "mysqlclient" "mysqlclient_r"
+		NAMES "mysqlclient" "mysqlclient_r" "libmysql"
 		PATHS "$ENV{PROGRAMFILES}/MySQL/*/lib"
-			  "$ENV{PROGRAMFILES(x86)}/MySQL/*/lib"
+			  "$ENV{${MYENV}}/MySQL/*/lib"
 			  "$ENV{SYSTEMDRIVE}/MySQL/*/lib" )
 else()
 	find_path( MYSQL_INCLUDE_DIR
@@ -56,24 +57,24 @@ else()
 endif()
 
 
+IF (MYSQL_INCLUDE_DIR AND MYSQL_LIBRARY)
+  SET(MYSQL_FOUND TRUE)
+  SET( MYSQL_LIBRARIES ${MYSQL_LIBRARY} )
+ELSE (MYSQL_INCLUDE_DIR AND MYSQL_LIBRARY)
+  SET(MYSQL_FOUND FALSE)
+  SET( MYSQL_LIBRARIES )
+ENDIF (MYSQL_INCLUDE_DIR AND MYSQL_LIBRARY)
 
-if( MYSQL_INCLUDE_DIR AND EXISTS "${MYSQL_INCLUDE_DIRS}/mysql_version.h" )
-	file( STRINGS "${MYSQL_INCLUDE_DIRS}/mysql_version.h"
-		MYSQL_VERSION_H REGEX "^#define[ \t]+MYSQL_SERVER_VERSION[ \t]+\"[^\"]+\".*$" )
-	string( REGEX REPLACE
-		"^.*MYSQL_SERVER_VERSION[ \t]+\"([^\"]+)\".*$" "\\1" MYSQL_VERSION_STRING
-		"${MYSQL_VERSION_H}" )
-endif()
+IF (MYSQL_FOUND)
+    MESSAGE(STATUS "Found MySQL: ${MYSQL_LIBRARY}")
+ELSE (MYSQL_FOUND)
+  IF (MySQL_FIND_REQUIRED)
+    MESSAGE(STATUS "Looked for MySQL libraries named ${MYSQL_NAMES}.")
+    MESSAGE(FATAL_ERROR "Could NOT find MySQL library")
+  ENDIF (MySQL_FIND_REQUIRED)
+ENDIF (MYSQL_FOUND)
 
-# handle the QUIETLY and REQUIRED arguments and set MYSQL_FOUND to TRUE if
-# all listed variables are TRUE
-include( FindPackageHandleStandardArgs )
-find_package_handle_standard_args( MYSQL DEFAULT_MSG
-	REQUIRED_VARS	MYSQL_LIBRARY MYSQL_INCLUDE_DIR
-	VERSION_VAR		MYSQL_VERSION_STRING )
-
-set( MYSQL_INCLUDE_DIRS ${MYSQL_INCLUDE_DIR} )
-set( MYSQL_LIBRARIES ${MYSQL_LIBRARY} )
-
-mark_as_advanced( MYSQL_INCLUDE_DIR MYSQL_LIBRARY )
-
+MARK_AS_ADVANCED(
+  MYSQL_LIBRARY
+  MYSQL_INCLUDE_DIR
+)
